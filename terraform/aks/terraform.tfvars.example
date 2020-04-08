@@ -1,0 +1,10 @@
+resource_group_name="azure-resource-group-name"
+location="centralus"
+client_id="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+client_secret="your-client-secret"
+object_id="yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
+prefix="prefix"
+subscription_id="azure-subscription-id"
+acr_name="azure-container-registry-name"
+node_count=3
+
