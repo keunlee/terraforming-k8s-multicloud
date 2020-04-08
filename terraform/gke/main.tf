@@ -42,24 +42,3 @@ module "local-cluster-001" {
   vpc_subnetwork_cidr_range              = var.vpc_subnetwork_cidr_range
 }
 
-module "local-cluster-002" {
-  source  = "../modules/gcp/gke"
-
-  # These values are set from the terrafrom.tfvas file
-  gcp_project_id                         = var.gcp_project_id
-  cluster_name                           = "local-cluster-002"
-  gcp_location                           = var.gcp_location
-  daily_maintenance_window_start_time    = var.daily_maintenance_window_start_time
-  node_pools                             = var.node_pools_local_cluster_002
-  cluster_secondary_range_name           = var.cluster_secondary_range_name
-  services_secondary_range_name          = var.services_secondary_range_name
-  master_ipv4_cidr_block                 = var.master_ipv4_cidr_block
-  access_private_images                  = var.access_private_images
-  http_load_balancing_disabled           = var.http_load_balancing_disabled
-  master_authorized_networks_cidr_blocks = var.master_authorized_networks_cidr_blocks
-  istio_config_disabled                  = true
-  services_secondary_range_cidr          = var.services_secondary_range_cidr
-  cluster_secondary_range_cidr           = var.cluster_secondary_range_cidr
-  vpc_subnetwork_cidr_range              = var.vpc_subnetwork_cidr_range
-}
-
