@@ -6,14 +6,6 @@ The ID of the project in which the resources belong.
 EOF
 }
 
-variable "cluster_name" {
-  type = string
-
-  description = <<EOF
-The name of the cluster, unique within the project and zone.
-EOF
-}
-
 variable "gcp_location" {
   type = string
 
@@ -40,7 +32,11 @@ format HH:MM, where HH : [00-23] and MM : [00-59] GMT.
 EOF
 }
 
-variable "node_pools" {
+variable "node_pools_local_cluster_002" {
+  type = list(map(string))
+}
+
+variable "node_pools_local_cluster_001" {
   type = list(map(string))
 
   description = <<EOF
@@ -81,23 +77,23 @@ false. https://cloud.google.com/kubernetes-engine/docs/how-to/preemptible-vms
 EOF
 }
 
-variable "vpc_network_name" {
-  type = string
+# variable "vpc_network_name" {
+#   type = string
 
-  description = <<EOF
-The name of the Google Compute Engine network to which the cluster is
-connected.
-EOF
-}
+#   description = <<EOF
+# The name of the Google Compute Engine network to which the cluster is
+# connected.
+# EOF
+# }
 
-variable "vpc_subnetwork_name" {
-  type = string
+# variable "vpc_subnetwork_name" {
+#   type = string
 
-  description = <<EOF
-The name of the Google Compute Engine subnetwork in which the cluster's
-instances are launched.
-EOF
-}
+#   description = <<EOF
+# The name of the Google Compute Engine subnetwork in which the cluster's
+# instances are launched.
+# EOF
+# }
 
 variable "vpc_subnetwork_cidr_range" {
   type = string

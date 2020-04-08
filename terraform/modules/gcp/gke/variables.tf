@@ -87,22 +87,30 @@ false. https://cloud.google.com/kubernetes-engine/docs/how-to/preemptible-vms
 EOF
 }
 
-variable "vpc_network_name" {
-  type = string
+# variable "vpc_network_name" {
+#   type = string
 
-  description = <<EOF
-The name of the Google Compute Engine network to which the cluster is
-connected.
-EOF
+#   description = <<EOF
+# The name of the Google Compute Engine network to which the cluster is
+# connected.
+# EOF
+# }
+
+# variable "vpc_subnetwork_name" {
+#   type = string
+
+#   description = <<EOF
+# The name of the Google Compute Engine subnetwork in which the cluster's
+# instances are launched.
+# EOF
+# }
+
+variable "vpc_subnetwork_cidr_range" {
+  type = string
 }
 
-variable "vpc_subnetwork_name" {
+variable "cluster_secondary_range_cidr" {
   type = string
-
-  description = <<EOF
-The name of the Google Compute Engine subnetwork in which the cluster's
-instances are launched.
-EOF
 }
 
 variable "cluster_secondary_range_name" {
@@ -113,6 +121,10 @@ The name of the secondary range to be used as for the cluster CIDR block.
 The secondary range will be used for pod IP addresses. This must be an
 existing secondary range associated with the cluster subnetwork.
 EOF
+}
+
+variable "services_secondary_range_cidr" {
+  type = string
 }
 
 variable "services_secondary_range_name" {

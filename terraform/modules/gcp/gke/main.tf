@@ -1,4 +1,4 @@
-# Resource definitions for cluster and node pools
+# Resource definitions for cluster, node pools, and vpc networks/subnetworks
 
 # Each argument is explained, most details are pulled from the Terraform
 # documentation. Arguments set by input variables are documented in the
@@ -18,15 +18,66 @@ locals {
 
 # https://www.terraform.io/docs/providers/google/index.html
 provider "google" {
-  version = "3.5.0"
   project = var.gcp_project_id
   region  = local.gcp_region
 }
 
 provider "google-beta" {
-  version = "3.5.0"
   project = var.gcp_project_id
   region  = local.gcp_region
+}
+
+# Refer to the vpc-network and vpc-subnetwork by the name value on the
+# resource, rather than the variable used to assign the name, so that
+# Terraform knows they must be created before creating the cluster
+resource "google_compute_network" "vpc_network" {
+  name                    =  "${var.cluster_name}-vpc-network" # var.vpc_network_name
+  auto_create_subnetworks = "false"
+  project                 = var.gcp_project_id
+}
+
+# https://www.terraform.io/docs/providers/google/r/compute_subnetwork.html
+resource "google_compute_subnetwork" "vpc_subnetwork" {
+  # The name of the resource, provided by the client when initially creating
+  # the resource. The name must be 1-63 characters long, and comply with
+  # RFC1035. Specifically, the name must be 1-63 characters long and match the
+  # regular expression [a-z]([-a-z0-9]*[a-z0-9])? which means the first
+  # character must be a lowercase letter, and all following characters must be
+  # a dash, lowercase letter, or digit, except the last character, which
+  # cannot be a dash.
+  #name = "default-${var.gcp_cluster_region}"
+  project = var.gcp_project_id
+  region  = local.gcp_region
+
+  name = "${var.cluster_name}-vpc-subnetwork" # var.vpc_subnetwork_name
+
+  ip_cidr_range = var.vpc_subnetwork_cidr_range
+
+  # The network this subnet belongs to. Only networks that are in the
+  # distributed mode can have subnetworks.
+  network = google_compute_network.vpc_network.self_link
+
+  # Configurations for secondary IP ranges for VM instances contained in this
+  # subnetwork. The primary IP of such VM must belong to the primary ipCidrRange
+  # of the subnetwork. The alias IPs may belong to either primary or secondary
+  # ranges.
+  secondary_ip_range {
+    range_name    = "${var.cluster_name}-${var.cluster_secondary_range_name}" # var.cluster_secondary_range_name
+    ip_cidr_range = var.cluster_secondary_range_cidr
+  }
+  secondary_ip_range {
+    range_name    = "${var.cluster_name}-${var.services_secondary_range_name}" # var.services_secondary_range_name
+    ip_cidr_range = var.services_secondary_range_cidr
+  }
+
+  # When enabled, VMs in this subnetwork without external IP addresses can
+  # access Google APIs and services by using Private Google Access. This is
+  # set explicitly to prevent Google's default from fighting with Terraform.
+  private_ip_google_access = true
+
+  depends_on = [
+    google_compute_network.vpc_network,
+  ]
 }
 
 # https://www.terraform.io/docs/providers/google/r/container_cluster.html
@@ -106,24 +157,28 @@ resource "google_container_cluster" "cluster" {
     }
   }
 
-  network    = var.vpc_network_name
-  subnetwork = var.vpc_subnetwork_name
+  network    = google_compute_network.vpc_network.name # var.vpc_network_name
+  subnetwork = google_compute_subnetwork.vpc_subnetwork.name # var.vpc_subnetwork_name
 
   # Configuration for cluster IP allocation. As of now, only pre-allocated
   # subnetworks (custom type with secondary ranges) are supported. This will
   # activate IP aliases.
   ip_allocation_policy {
-    cluster_secondary_range_name  = var.cluster_secondary_range_name
-    services_secondary_range_name = var.services_secondary_range_name
+    cluster_secondary_range_name  = "${var.cluster_name}-${var.cluster_secondary_range_name}" # var.cluster_secondary_range_name # var.cluster_secondary_range_name
+    services_secondary_range_name = "${var.cluster_name}-${var.services_secondary_range_name}" # var.services_secondary_range_name
+  }
+
+  # The number of nodes to create in this cluster (not including the Kubernetes master).
+  # initial_node_count = 1
+  node_pool {
+    name = "default-pool"
+    initial_node_count = 1
   }
 
   # It's not possible to create a cluster with no node pool defined, but we
   # want to only use separately managed node pools. So we create the smallest
   # possible default node pool and immediately delete it.
   remove_default_node_pool = true
-
-  # The number of nodes to create in this cluster (not including the Kubernetes master).
-  initial_node_count = 1
 
   # The desired configuration options for master authorized networks. Omit the
   # nested cidr_blocks attribute to disallow external access (except the
@@ -144,6 +199,11 @@ resource "google_container_cluster" "cluster" {
   timeouts {
     update = "20m"
   }
+
+  # stop a diff based on the default pool being gone
+  lifecycle {
+    ignore_changes = ["node_pool"]
+  } 
 }
 
 # https://www.terraform.io/docs/providers/google/r/container_node_pool.html
@@ -161,6 +221,7 @@ resource "google_container_node_pool" "node_pool" {
   cluster = google_container_cluster.cluster.name
 
   initial_node_count = lookup(var.node_pools[count.index], "initial_node_count", 1)
+  # node_count = lookup(var.node_pools[count.index], "node_count", 1)
 
   # Configuration required by cluster autoscaler to adjust the size of the node pool to the current cluster usage.
   autoscaling {
@@ -240,4 +301,3 @@ resource "google_container_node_pool" "node_pool" {
     update = "20m"
   }
 }
-
