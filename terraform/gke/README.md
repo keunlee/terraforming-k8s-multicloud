@@ -16,10 +16,5 @@ see: https://github.com/jetstack/terraform-google-gke-cluster/blob/master/exampl
 
 To see an example leveraging some of the Google Beta features see the terraform files in this directory. 
 
-## Registering GKE Clusters with Anthos
-
-
-
-
 
 
