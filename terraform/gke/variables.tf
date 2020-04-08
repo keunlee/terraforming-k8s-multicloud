@@ -32,10 +32,6 @@ format HH:MM, where HH : [00-23] and MM : [00-59] GMT.
 EOF
 }
 
-variable "node_pools_local_cluster_002" {
-  type = list(map(string))
-}
-
 variable "node_pools_local_cluster_001" {
   type = list(map(string))
 
