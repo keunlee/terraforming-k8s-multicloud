@@ -34,15 +34,3 @@ module "az-cluster-1" {
     cluster_name        = "azure-cluster-1"
     node_count          = var.node_count
 }
-
-module "az-cluster-2" {
-    source              = "../modules/azure/aks"
-    resource_group_name = azurerm_resource_group.rg.name
-    location            = azurerm_resource_group.rg.location
-    client_id           = var.client_id
-    client_secret       = var.client_secret
-    object_id           = var.object_id
-    prefix              = var.prefix
-    cluster_name        = "azure-cluster-2"
-    node_count          = var.node_count
-}
