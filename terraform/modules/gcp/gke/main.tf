@@ -206,13 +206,22 @@ resource "google_container_cluster" "cluster" {
   # The desired configuration options for master authorized networks. Omit the
   # nested cidr_blocks attribute to disallow external access (except the
   # cluster node IPs, which GKE automatically whitelists).
+  # master_authorized_networks_config {
+  #   dynamic "cidr_blocks" {
+  #     for_each = var.master_authorized_networks_cidr_blocks
+  #     content {
+  #       cidr_block   = cidr_blocks.value.cidr_block
+  #       display_name = cidr_blocks.value.display_name
+  #     }
+  #   }
+  # }
+
+  # With a private cluster, it is highly recommended to restrict access to the cluster master
+  # However, for testing purposes we will allow all inbound traffic.
   master_authorized_networks_config {
-    dynamic "cidr_blocks" {
-      for_each = var.master_authorized_networks_cidr_blocks
-      content {
-        cidr_block   = cidr_blocks.value.cidr_block
-        display_name = cidr_blocks.value.display_name
-      }
+    cidr_blocks {
+      cidr_block   = "0.0.0.0/0"
+      display_name = "all-for-testing"
     }
   }
 
