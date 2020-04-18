@@ -21,12 +21,12 @@ locals {
   gcp_region         = format("%s-%s", local.gcp_location_parts[0], local.gcp_location_parts[1])
 }
 
-module "local-cluster-001" {
+module "cluster" {
   source  = "../modules/gcp/gke"
 
   # These values are set from the terrafrom.tfvas file
   gcp_project_id                         = var.gcp_project_id
-  cluster_name                           = "local-cluster-001"
+  cluster_name                           = var.cluster_name
   gcp_location                           = var.gcp_location
   daily_maintenance_window_start_time    = var.daily_maintenance_window_start_time
   node_pools                             = var.node_pools_local_cluster_001

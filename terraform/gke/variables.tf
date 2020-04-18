@@ -6,6 +6,14 @@ The ID of the project in which the resources belong.
 EOF
 }
 
+variable "cluster_name" {
+  type = string
+
+  description = <<EOF
+The name of the cluster, unique within the project and zone.
+EOF
+}
+
 variable "gcp_location" {
   type = string
 
